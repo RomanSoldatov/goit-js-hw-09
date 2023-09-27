@@ -7,23 +7,9 @@ const timer = document.querySelector('.timer');
 timer.style.display = 'flex';
 timer.style.gap = '25px';
 
-function convertMs(ms) {
-  const second = 1000;
-  const minute = second * 60;
-  const hour = minute * 60;
-  const day = hour * 24;
-
-  const days = Math.floor(ms / day);
-  const hours = Math.floor((ms % day) / hour);
-  const minutes = Math.floor(((ms % day) % hour) / minute);
-  const seconds = Math.floor((((ms % day) % hour) % minute) / second);
-
-  return { days, hours, minutes, seconds };
-}
-
-function addLeadingZero(value) {
-  return String(value).padStart(2, '0');
-}
+const startBtn = document.querySelector('[data-start]');
+const inputData = document.querySelector('#datetime-picker');
+startBtn.disabled = true;
 
 const options = {
   enableTime: true,
@@ -36,9 +22,8 @@ const options = {
 
     if (selectedDate < currentDate) {
       Report.failure('Please choose a date in the future');
-      document.querySelector('[data-start]').disabled = true;
     } else {
-      document.querySelector('[data-start]').disabled = false;
+      startBtn.disabled = false;
     }
   },
 };
@@ -47,8 +32,6 @@ const fp = flatpickr('#datetime-picker', options);
 
 let countdownInterval;
 
-const startBtn = document.querySelector('[data-start]');
-startBtn.disabled = true;
 startBtn.addEventListener('click', () => {
   const selectedDate = new Date(fp.selectedDates[0]);
   const currentDate = new Date();
@@ -56,12 +39,15 @@ startBtn.addEventListener('click', () => {
   if (selectedDate > currentDate) {
     startBtn.disabled = false;
     countdownInterval = setInterval(() => {
+      startBtn.disabled = true;
+      inputData.disabled = true;
       const currentTime = new Date();
       const timeDifference = selectedDate - currentTime;
 
       if (timeDifference <= 0) {
+        inputData.disabled = false;
         clearInterval(countdownInterval);
-        Notiflix.Report.success('Countdown finished!');
+        Report.success('Countdown finished!');
         document.querySelector('[data-days]').textContent = '00';
         document.querySelector('[data-hours]').textContent = '00';
         document.querySelector('[data-minutes]').textContent = '00';
@@ -81,3 +67,21 @@ startBtn.addEventListener('click', () => {
     }, 1000);
   }
 });
+
+function convertMs(ms) {
+  const second = 1000;
+  const minute = second * 60;
+  const hour = minute * 60;
+  const day = hour * 24;
+
+  const days = Math.floor(ms / day);
+  const hours = Math.floor((ms % day) / hour);
+  const minutes = Math.floor(((ms % day) % hour) / minute);
+  const seconds = Math.floor((((ms % day) % hour) % minute) / second);
+
+  return { days, hours, minutes, seconds };
+}
+
+function addLeadingZero(value) {
+  return String(value).padStart(2, '0');
+}
